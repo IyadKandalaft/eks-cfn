@@ -22,13 +22,13 @@ Parameters:
     Type: String
     Description: The role ARN used for the EKS worker nodes
 
-  NodeSubnet1ID:
+  Subnet1ID:
     Type: "AWS::EC2::Subnet::Id"
     Description: The ID of the subnet in Availability Zone 1 
       in your existing VPC for the Node group instances
     Default: ""
 
-  NodeSubnet2ID:
+  Subnet2ID:
     Type: "AWS::EC2::Subnet::Id"
     Description: The ID of the subnet in Availability Zone 2 
       in your existing VPC for the Node group instances
@@ -66,5 +66,5 @@ Resources:
       RemoteAccess:
         Ec2SshKey: !Ref KeyPairName
       Subnets: 
-        - !Ref NodeSubnet1ID
-        - !Ref NodeSubnet2ID
+        - !Ref Subnet1ID
+        - !Ref Subnet2ID

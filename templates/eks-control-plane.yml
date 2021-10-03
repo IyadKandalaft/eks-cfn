@@ -19,19 +19,26 @@ Parameters:
     Type: String
     Description: Name for the EKS cluster
 
+  ControlPlaneRoleArn:
+    Type: String
+    Description: IAM role used by the control plane
+
 Resources:
   EKS:
     Type: "AWS::EKS::Cluster"
     Properties:
       Name: !Ref EKSClusterName
       Version: !Ref KubernetesVersion
-      RoleArn: !GetAtt EKSClusterRole.Arn
+      RoleArn: !Ref ControlPlaneRoleArn
       ResourcesVpcConfig:
         SubnetIds: 
           - !Ref Subnet1ID
           - !Ref Subnet2ID
 
 Outputs:
+  ClusterName:
+    Description: EKS Cluster Name
+    Value: !Ref EKS
   ClusterArn:
     Description: EKS Cluster ARN
-    Value: !!GetAtt EKS.Arn
+    Value: !GetAtt EKS.Arn

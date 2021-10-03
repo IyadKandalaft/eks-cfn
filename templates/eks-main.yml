@@ -39,26 +39,27 @@ Resources:
   IAMStack:
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: templates/eks-control-plane.yml
+      TemplateURL: eks-iam.yml
 
   ControlPlaneStack:
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: templates/eks-control-plane.yml
+      TemplateURL: eks-control-plane.yml
       Parameters:
         KubernetesVersion: !Ref KubernetesVersion
         Subnet1ID: !Ref ControlPlaneSubnet1ID
         Subnet2ID: !Ref ControlPlaneSubnet2ID
         EKSClusterName: !Ref EKSClusterName
+        ControlPlaneRoleArn: !GetAtt IAMStack.Outputs.ControlPlaneRoleArn
 
   NodeGroupStack:  
     Type: "AWS::CloudFormation::Stack"
     Properties:
-      TemplateURL: templates/eks-node-group.yml
+      TemplateURL: eks-node-group.yml
       Parameters:
         KeyPairName: !Ref KeyPairName
         InstanceType: t3.medium,t3a.medium
-        ClusterName: !Ref EKSClusterName
+        ClusterName: !GetAtt ControlPlaneStack.Outputs.ClusterName
         NodeGroupName: small
         NodeRoleArn: !GetAtt IAMStack.Outputs.NodeRoleArn
         Subnet1ID: !Ref NodeSubnet1ID
