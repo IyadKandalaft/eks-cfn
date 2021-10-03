@@ -1,0 +1,70 @@
+Parameters:
+  KeyPairName:
+    Description: The name of the key pair that allows you
+      to securely connect to your instance after it launches
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: eks-cluster
+  
+  InstanceType:
+    Type: CommaDelimitedList
+    Description: The instance type used for the small node group
+    Default: t3.medium,t3a.medium
+
+  ClusterName:
+    Type: String
+    Description: EKS Cluster to associate this node group with
+
+  NodeGroupName:
+    Type: String 
+    Description: Node Group Name to reference this node group
+
+  NodeRoleArn:
+    Type: String
+    Description: The role ARN used for the EKS worker nodes
+
+  NodeSubnet1ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the subnet in Availability Zone 1 
+      in your existing VPC for the Node group instances
+    Default: ""
+
+  NodeSubnet2ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the subnet in Availability Zone 2 
+      in your existing VPC for the Node group instances
+    Default: ""
+
+  MinWorkers:
+    Type: Number
+    Description: Minimum number of worker nodes in the group
+    Default: 0
+
+  MaxWorkers:
+    Type: Number
+    Description: Maximum number of worker nodes in the group
+    Default: 5
+  
+  DesiredWorkers:
+    Type: Number
+    Description: Desired number of worker nodes in the group
+    Default: 0
+
+Resources:
+  NodeGroup:
+    Type: "AWS::EKS::Nodegroup"
+    Properties:
+      NodegroupName: !Ref NodeGroupName
+      ClusterName: !Ref ClusterName
+      NodeRole: !Ref NodeRoleArn
+      InstanceTypes: !Ref InstanceType
+      ScalingConfig:
+        MinSize: !Ref MinWorkers
+        DesiredSize: !Ref DesiredWorkers
+        MaxSize: !Ref MaxWorkers
+      Labels:
+        NodeSize: small
+      RemoteAccess:
+        Ec2SshKey: !Ref KeyPairName
+      Subnets: 
+        - !Ref NodeSubnet1ID
+        - !Ref NodeSubnet2ID

@@ -1,0 +1,65 @@
+Parameters:
+  KeyPairName:
+    Description: The name of the key pair that allows you
+      to securely connect to your instance after it launches
+    Type: AWS::EC2::KeyPair::KeyName
+
+  KubernetesVersion:
+    Type: String
+    AllowedValues: [ "1.21", "1.20", "1.19", "1.18", "1.17" ]
+    Default: "1.21"
+    Description: The Kubernete
+
+  ControlPlaneSubnet1ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the subnet in Availability Zone 1 in your existing VPC
+      that will be used for EKS the Control Plane
+
+  ControlPlaneSubnet2ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the public subnet in Availability Zone 2 in your existing VPC
+      that will be used for EKS the Control Plane
+
+  NodeSubnet1ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the subnet in Availability Zone 1 in your existing VPC
+      that will be used for worker nodes
+
+  NodeSubnet2ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the subnet in Availability Zone 2 in your existing VPC
+      that will be used for worker nodes
+
+  EKSClusterName:
+    Type: String
+    Description: "Name for the EKS cluster, if left blank one will be auto-generated. Must be unique within the AWS Region."
+    Default: eks-cluster
+
+Resources:
+  IAMStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: templates/eks-control-plane.yml
+
+  ControlPlaneStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: templates/eks-control-plane.yml
+      Parameters:
+        KubernetesVersion: !Ref KubernetesVersion
+        Subnet1ID: !Ref ControlPlaneSubnet1ID
+        Subnet2ID: !Ref ControlPlaneSubnet2ID
+        EKSClusterName: !Ref EKSClusterName
+
+  NodeGroupStack:  
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TemplateURL: templates/eks-node-group.yml
+      Parameters:
+        KeyPairName: !Ref KeyPairName
+        InstanceType: t3.medium,t3a.medium
+        ClusterName: !Ref EKSClusterName
+        NodeGroupName: small
+        NodeRoleArn: !GetAtt IAMStack.Outputs.NodeRoleArn
+        Subnet1ID: !Ref NodeSubnet1ID
+        Subnet2ID: !Ref NodeSubnet2ID

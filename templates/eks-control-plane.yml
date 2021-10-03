@@ -1,0 +1,37 @@
+Parameters:
+  KubernetesVersion:
+    Type: String
+    AllowedValues: [ "1.21", "1.20", "1.19", "1.18", "1.17" ]
+    Default: "1.21"
+    Description: The Kubernete
+  
+  Subnet1ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the public subnet in Availability Zone 1 in your existing VPC
+      that will be used for EKS the Control Plane
+
+  Subnet2ID:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: The ID of the public subnet in Availability Zone 2 in your existing VPC
+      that will be used for EKS the Control Plane
+
+  EKSClusterName:
+    Type: String
+    Description: Name for the EKS cluster
+
+Resources:
+  EKS:
+    Type: "AWS::EKS::Cluster"
+    Properties:
+      Name: !Ref EKSClusterName
+      Version: !Ref KubernetesVersion
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds: 
+          - !Ref Subnet1ID
+          - !Ref Subnet2ID
+
+Outputs:
+  ClusterArn:
+    Description: EKS Cluster ARN
+    Value: !!GetAtt EKS.Arn
